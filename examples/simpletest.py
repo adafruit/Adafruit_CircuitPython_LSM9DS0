@@ -2,6 +2,7 @@
 # Will print the acceleration, magnetometer, and gyroscope values every second.
 import board
 import busio
+import digitalio
 import time
 
 import adafruit_lsm9ds0
@@ -16,8 +17,8 @@ sensor = adafruit_lsm9ds0.LSM9DS0_I2C(i2c)
 
 # SPI connection:
 #spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-#xmcs = board.D5  # Pin connected to XMCS (accel/mag chip select).
-#gcs  = board.D6  # Pin connected to GCS (gyro chip select).
+#xmcs = digitalio.DigitalInOut(board.D5)  # Pin connected to XMCS (accel/mag chip select).
+#gcs  = digitalio.DigitalInOut(board.D6)  # Pin connected to GCS (gyro chip select).
 #sensor = adafruit_lsm9ds0.LSM9DS0_SPI(spi, xmcs, gcs)
 
 # Main loop will read the acceleration, magnetometer, gyroscope, Temperature
@@ -29,12 +30,12 @@ while True:
     gyro_x, gyro_y, gyro_z = sensor.gyroscope
     temp = sensor.temperature
     # Print values.
-    print('Acceleration (m/s^2): ({0:0.3f},{0:0.3f},{0:0.3f})'.format(
+    print('Acceleration (m/s^2): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(
           accel_x, accel_y, accel_z))
-    print('Magnetometer (gauss): ({0:0.3f},{0:0.3f},{0:0.3f})'.format(
+    print('Magnetometer (gauss): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(
           mag_x, mag_y, mag_z))
-    print('Gyroscope (radians/sec): ({0:0.3f},{0:0.3f},{0:0.3f})'.format(
+    print('Gyroscope (radians/sec): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(
           gyro_x, gyro_y, gyro_z))
-    print('Temperature: {0.3f}C'.format(temp))
+    print('Temperature: {0:0.3f}C'.format(temp))
     # Delay for a second.
     time.sleep(1.0)
