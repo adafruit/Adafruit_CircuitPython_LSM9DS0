@@ -32,6 +32,7 @@ See examples/simpletest.py for a demo of the usage.
 * Author(s): Tony DiCola
 """
 import time
+import ustruct
 
 import adafruit_bus_device.i2c_device as i2c_device
 import adafruit_bus_device.spi_device as spi_device
@@ -105,6 +106,15 @@ MAGGAIN_12GAUSS              = (0b11 << 5)  # +/- 12 gauss
 GYROSCALE_245DPS             = (0b00 << 4)  # +/- 245 degrees per second rotation
 GYROSCALE_500DPS             = (0b01 << 4)  # +/- 500 degrees per second rotation
 GYROSCALE_2000DPS            = (0b10 << 4)  # +/- 2000 degrees per second rotation
+
+
+def _twos_comp(val, bits):
+    # Convert an unsigned integer in 2's compliment form of the specified bit
+    # length to its signed integer value and return it.
+    if val & (1 << (bits - 1)) != 0:
+        return val - (1 << bits)
+    else:
+        return val
 
 
 class LSM9DS0:
@@ -226,16 +236,9 @@ class LSM9DS0:
         # Read the accelerometer
         self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_A, 6,
                          self._BUFFER)
-        xlo = self._BUFFER[0];
-        xhi = self._BUFFER[1];
-        ylo = self._BUFFER[2];
-        yhi = self._BUFFER[3];
-        zlo = self._BUFFER[4];
-        zhi = self._BUFFER[5];
-        # Shift values to create properly formed integer (low byte first)
-        raw_x = ((xhi << 8) | xlo) & 0xFFFF
-        raw_y = ((yhi << 8) | ylo) & 0xFFFF
-        raw_z = ((zhi << 8) | zlo) & 0xFFFF
+        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
+        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
+        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -256,16 +259,9 @@ class LSM9DS0:
         # Read the magnetometer
         self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_M, 6,
                          self._BUFFER)
-        xlo = self._BUFFER[0];
-        xhi = self._BUFFER[1];
-        ylo = self._BUFFER[2];
-        yhi = self._BUFFER[3];
-        zlo = self._BUFFER[4];
-        zhi = self._BUFFER[5];
-        # Shift values to create properly formed integer (low byte first)
-        raw_x = ((xhi << 8) | xlo) & 0xFFFF
-        raw_y = ((yhi << 8) | ylo) & 0xFFFF
-        raw_z = ((zhi << 8) | zlo) & 0xFFFF
+        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
+        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
+        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -285,22 +281,15 @@ class LSM9DS0:
         # Read the gyroscope
         self._read_bytes(_GYROTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_G, 6,
                          self._BUFFER)
-        xlo = self._BUFFER[0];
-        xhi = self._BUFFER[1];
-        ylo = self._BUFFER[2];
-        yhi = self._BUFFER[3];
-        zlo = self._BUFFER[4];
-        zhi = self._BUFFER[5];
-        # Shift values to create properly formed integer (low byte first)
-        raw_x = ((xhi << 8) | xlo) & 0xFFFF
-        raw_y = ((yhi << 8) | ylo) & 0xFFFF
-        raw_z = ((zhi << 8) | zlo) & 0xFFFF
+        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
+        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
+        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
         return (raw_x, raw_y, raw_z)
 
     @property
     def gyroscope(self):
         """Get the gyroscope X, Y, Z axis values as a 3-tuple of
-        radians/second values.
+        degrees/second values.
         """
         raw = self.read_mag_raw()
         return map(lambda x: x * self._gyro_dps_digit, raw)
@@ -313,8 +302,8 @@ class LSM9DS0:
         # Read temp sensor
         self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_TEMP_OUT_L_XM, 2,
                          self._BUFFER)
-        temp = (self._BUFFER[1] << 8) | self._BUFFER[0]
-        return temp
+        temp = ((self._BUFFER[1] << 8) | self._BUFFER[0]) >> 4
+        return _twos_comp(temp, 12)
 
     @property
     def temperature(self):
@@ -364,15 +353,15 @@ class LSM9DS0_I2C(LSM9DS0):
             i2c.readinto(self._BUFFER, end=1)
         return self._BUFFER[0]
 
-    def _read_bytes(self, sensor_type, address, count, buffer):
+    def _read_bytes(self, sensor_type, address, count, buf):
         if sensor_type == _GYROTYPE:
             device = self._gyro_device
         else:
             device = self._xm_device
         with device as i2c:
-            self._BUFFER[0] = address & 0xFF
-            i2c.write(self._BUFFER, end=1, stop=False)
-            i2c.readinto(self._BUFFER, end=count)
+            buf[0] = address & 0xFF
+            i2c.write(buf, end=1, stop=False)
+            i2c.readinto(buf, end=count)
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
@@ -404,16 +393,16 @@ class LSM9DS0_SPI(LSM9DS0):
             spi.readinto(self._BUFFER, end=1)
         return self._BUFFER[0]
 
-    def _read_bytes(self, sensor_type, address, count, buffer):
+    def _read_bytes(self, sensor_type, address, count, buf):
         if sensor_type == _GYROTYPE:
             device = self._gyro_device
         else:
             device = self._xm_device
         with device as spi:
             spi.configure(baudrate=200000, phase=0, polarity=0)
-            self._BUFFER[0] = (address | 0x80) & 0xFF
-            spi.write(self._BUFFER, end=1)
-            spi.readinto(self._BUFFER, end=count)
+            buf[0] = (address | 0x80) & 0xFF
+            spi.write(buf, end=1)
+            spi.readinto(buf, end=count)
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
