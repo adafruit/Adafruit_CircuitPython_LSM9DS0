@@ -31,14 +31,18 @@ See examples/simpletest.py for a demo of the usage.
 
 * Author(s): Tony DiCola
 """
-import time
-import ustruct
+try:
+    import struct
+except ImportError:
+    import ustruct as struct
 
 import adafruit_bus_device.i2c_device as i2c_device
 import adafruit_bus_device.spi_device as spi_device
 
+from micropython import const
 
 # Internal constants and register values:
+# pylint: disable=bad-whitespace
 _LSM9DS0_ADDRESS_ACCELMAG           = const(0x1D)  # 3B >> 1 = 7bit default
 _LSM9DS0_ADDRESS_GYRO               = const(0x6B)  # D6 >> 1 = 7bit default
 _LSM9DS0_XM_ID                      = const(0b01001001)
@@ -106,6 +110,7 @@ MAGGAIN_12GAUSS              = (0b11 << 5)  # +/- 12 gauss
 GYROSCALE_245DPS             = (0b00 << 4)  # +/- 245 degrees per second rotation
 GYROSCALE_500DPS             = (0b01 << 4)  # +/- 500 degrees per second rotation
 GYROSCALE_2000DPS            = (0b10 << 4)  # +/- 2000 degrees per second rotation
+# pylint: enable=bad-whitespace
 
 
 def _twos_comp(val, bits):
@@ -113,12 +118,11 @@ def _twos_comp(val, bits):
     # length to its signed integer value and return it.
     if val & (1 << (bits - 1)) != 0:
         return val - (1 << bits)
-    else:
-        return val
+    return val
 
 
 class LSM9DS0:
-
+    """Driver for the LSM9DS0 accelerometer, magnetometer, gyroscope."""
     # Class-level buffer for reading and writing data with the sensor.
     # This reduces memory allocations but means the code is not re-entrant or
     # thread safe!
@@ -137,9 +141,12 @@ class LSM9DS0:
         # enable gyro continuous
         self._write_u8(_GYROTYPE, _LSM9DS0_REGISTER_CTRL_REG1_G, 0x0F)
         # enable the temperature sensor (output rate same as the mag sensor)
-        tempReg = self._read_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG5_XM)
-        self._write_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG5_XM, tempReg | (1<<7))
+        temp_reg = self._read_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG5_XM)
+        self._write_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG5_XM, temp_reg | (1<<7))
         # Set default ranges for the various sensors
+        self._accel_mg_lsb = None
+        self._mag_mgauss_lsb = None
+        self._gyro_dps_digit = None
         self.accel_range = ACCELRANGE_2G
         self.mag_gain = MAGGAIN_2GAUSS
         self.gyro_scale = GYROSCALE_245DPS
@@ -236,9 +243,7 @@ class LSM9DS0:
         # Read the accelerometer
         self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_A, 6,
                          self._BUFFER)
-        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
-        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
-        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -259,9 +264,7 @@ class LSM9DS0:
         # Read the magnetometer
         self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_M, 6,
                          self._BUFFER)
-        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
-        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
-        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -281,9 +284,7 @@ class LSM9DS0:
         # Read the gyroscope
         self._read_bytes(_GYROTYPE, 0x80 | _LSM9DS0_REGISTER_OUT_X_L_G, 6,
                          self._BUFFER)
-        raw_x = ustruct.unpack_from('<h', self._BUFFER[0:2])[0]
-        raw_y = ustruct.unpack_from('<h', self._BUFFER[2:4])[0]
-        raw_z = ustruct.unpack_from('<h', self._BUFFER[4:6])[0]
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -320,7 +321,7 @@ class LSM9DS0:
         # MUST be implemented by subclasses!
         raise NotImplementedError()
 
-    def _read_bytes(self, sensor_type, address, count, buffer):
+    def _read_bytes(self, sensor_type, address, count, buf):
         # Read a count number of bytes into buffer from the provided 8-bit
         # register address.  The sensor_type boolean should be _MAGTYPE when
         # talking to the magnetometer, or _XGTYPE when talking to the accel or
@@ -336,10 +337,11 @@ class LSM9DS0:
 
 
 class LSM9DS0_I2C(LSM9DS0):
+    """Driver for the LSM9DS0 connected over I2C."""
 
     def __init__(self, i2c):
         self._gyro_device = i2c_device.I2CDevice(i2c, _LSM9DS0_ADDRESS_GYRO)
-        self._xm_device   = i2c_device.I2CDevice(i2c, _LSM9DS0_ADDRESS_ACCELMAG)
+        self._xm_device = i2c_device.I2CDevice(i2c, _LSM9DS0_ADDRESS_ACCELMAG)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
@@ -375,10 +377,11 @@ class LSM9DS0_I2C(LSM9DS0):
 
 
 class LSM9DS0_SPI(LSM9DS0):
+    """Driver for the LSM9DS0 connected over SPI."""
 
     def __init__(self, spi, xmcs, gcs):
         self._gyro_device = spi_device.I2CDevice(spi, gcs)
-        self._xm_device   = spi_device.I2CDevice(spi, xmcs)
+        self._xm_device = spi_device.I2CDevice(spi, xmcs)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
