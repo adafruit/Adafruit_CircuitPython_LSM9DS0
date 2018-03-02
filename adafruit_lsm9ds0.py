@@ -170,7 +170,7 @@ class LSM9DS0:
 
     @property
     def accel_range(self):
-        """Get and set the accelerometer range.  Must be a value of:
+        """The accelerometer range.  Must be a value of:
           - ACCELRANGE_2G
           - ACCELRANGE_4G
           - ACCELRANGE_6G
@@ -201,7 +201,7 @@ class LSM9DS0:
 
     @property
     def mag_gain(self):
-        """Get and set the magnetometer gain.  Must be a value of:
+        """The magnetometer gain.  Must be a value of:
           - MAGGAIN_2GAUSS
           - MAGGAIN_4GAUSS
           - MAGGAIN_8GAUSS
@@ -229,7 +229,7 @@ class LSM9DS0:
 
     @property
     def gyro_scale(self):
-        """Get and set the gyroscope scale.  Must be a value of:
+        """The gyroscope scale.  Must be a value of:
           - GYROSCALE_245DPS
           - GYROSCALE_500DPS
           - GYROSCALE_2000DPS
@@ -265,7 +265,7 @@ class LSM9DS0:
 
     @property
     def accelerometer(self):
-        """Get the accelerometer X, Y, Z axis values as a 3-tuple of
+        """Returns the accelerometer X, Y, Z axis values as a 3-tuple of
         m/s^2 values.
         """
         raw = self.read_accel_raw()
@@ -286,7 +286,7 @@ class LSM9DS0:
 
     @property
     def magnetometer(self):
-        """Get the magnetometer X, Y, Z axis values as a 3-tuple of
+        """Returns the magnetometer X, Y, Z axis values as a 3-tuple of
         gauss values.
         """
         raw = self.read_mag_raw()
@@ -306,7 +306,7 @@ class LSM9DS0:
 
     @property
     def gyroscope(self):
-        """Get the gyroscope X, Y, Z axis values as a 3-tuple of
+        """Returns the gyroscope X, Y, Z axis values as a 3-tuple of
         degrees/second values.
         """
         raw = self.read_mag_raw()
@@ -325,7 +325,7 @@ class LSM9DS0:
 
     @property
     def temperature(self):
-        """Get the temperature of the sensor in degrees Celsius."""
+        """Returns the temperature of the sensor in degrees Celsius."""
         # This is just a guess since the starting point (21C here) isn't documented :(
         temp = self.read_temp_raw()
         temp = 21.0 + temp/8
