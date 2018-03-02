@@ -30,6 +30,23 @@ Based on the driver from:
 See examples/simpletest.py for a demo of the usage.
 
 * Author(s): Tony DiCola
+
+Implementation Notes
+--------------------
+
+**Hardware:**
+
+* `Adafruit 9-DOF Accel/Mag/Gyro+Temp Breakout Board - LSM9DS0
+   <https://www.adafruit.com/product/2021>`_
+
+* `FLORA 9-DOF Accelerometer/Gyroscope/Magnetometer - LSM9DS0
+  <https://www.adafruit.com/product/2020>`_
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards:
+  https://github.com/adafruit/circuitpython/releases
+* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 try:
     import struct
