@@ -36,10 +36,10 @@ Implementation Notes
 
 **Hardware:**
 
-* `Adafruit 9-DOF Accel/Mag/Gyro+Temp Breakout Board - LSM9DS0
+* `Adafruit 9-DOF Accel, Mag, Gyro, & Temp Breakout Board - LSM9DS0
    <https://www.adafruit.com/product/2021>`_
 
-* `FLORA 9-DOF Accelerometer/Gyroscope/Magnetometer - LSM9DS0
+* `FLORA 9-DOF Accelerometer, Gyroscope, Magnetometer - LSM9DS0
   <https://www.adafruit.com/product/2020>`_
 
 **Software and Dependencies:**
