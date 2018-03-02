@@ -25,7 +25,7 @@
 
 CircuitPython module for the LSM9DS0 accelerometer, magnetometer, gyroscope.
 Based on the driver from:
-  https://github.com/adafruit/Adafruit_LSM9DS0
+https://github.com/adafruit/Adafruit_LSM9DS0
 
 See examples/simpletest.py for a demo of the usage.
 
