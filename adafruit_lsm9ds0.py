@@ -395,7 +395,7 @@ class LSM9DS0_I2C(LSM9DS0):
 
 class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
-
+    # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
         self._gyro_device = spi_device.I2CDevice(spi, gcs)
         self._xm_device = spi_device.I2CDevice(spi, xmcs)
