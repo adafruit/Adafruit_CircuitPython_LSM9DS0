@@ -53,8 +53,8 @@ try:
 except ImportError:
     import ustruct as struct
 
-import adafruit_bus_device.i2c_device as i2c_dev
-import adafruit_bus_device.spi_device as spi_dev
+import adafruit_bus_device.i2c_device as i2c_device
+import adafruit_bus_device.spi_device as spi_device
 
 from micropython import const
 
@@ -357,8 +357,8 @@ class LSM9DS0_I2C(LSM9DS0):
     """Driver for the LSM9DS0 connected over I2C."""
 
     def __init__(self, i2c):
-        self._gyro_device = i2c_dev.I2CDevice(i2c, _LSM9DS0_ADDRESS_GYRO)
-        self._xm_device = i2c_dev.I2CDevice(i2c, _LSM9DS0_ADDRESS_ACCELMAG)
+        self._gyro_device = i2c_device.I2CDevice(i2c, _LSM9DS0_ADDRESS_GYRO)
+        self._xm_device = i2c_device.I2CDevice(i2c, _LSM9DS0_ADDRESS_ACCELMAG)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
@@ -397,8 +397,8 @@ class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
     # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
-        self._gyro_device = spi_dev.I2CDevice(spi, gcs)
-        self._xm_device = spi_dev.I2CDevice(spi, xmcs)
+        self._gyro_device = spi_device.I2CDevice(spi, gcs)
+        self._xm_device = spi_device.I2CDevice(spi, xmcs)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
