@@ -8,10 +8,6 @@ import busio
 
 import adafruit_lsm9ds0
 
-
-# You have a couple options for wiring this sensor, either I2C (recommended)
-# or a SPI connection.  Choose _one_ option below and uncomment it:
-
 # I2C connection:
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_lsm9ds0.LSM9DS0_I2C(i2c)
