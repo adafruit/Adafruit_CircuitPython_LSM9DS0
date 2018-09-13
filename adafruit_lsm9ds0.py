@@ -264,7 +264,7 @@ class LSM9DS0:
         return (raw_x, raw_y, raw_z)
 
     @property
-    def accelerometer(self):
+    def acceleration(self):
         """The accelerometer X, Y, Z axis values as a 3-tuple of
         m/s^2 values.
         """
@@ -285,7 +285,7 @@ class LSM9DS0:
         return (raw_x, raw_y, raw_z)
 
     @property
-    def magnetometer(self):
+    def magnetic(self):
         """The magnetometer X, Y, Z axis values as a 3-tuple of
         gauss values.
         """
@@ -305,7 +305,7 @@ class LSM9DS0:
         return (raw_x, raw_y, raw_z)
 
     @property
-    def gyroscope(self):
+    def gyro(self):
         """The gyroscope X, Y, Z axis values as a 3-tuple of
         degrees/second values.
         """
