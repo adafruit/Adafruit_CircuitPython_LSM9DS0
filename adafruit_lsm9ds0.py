@@ -309,7 +309,7 @@ class LSM9DS0:
         """The gyroscope X, Y, Z axis values as a 3-tuple of
         degrees/second values.
         """
-        raw = self.read_mag_raw()
+        raw = self.read_gyro_raw()
         return map(lambda x: x * self._gyro_dps_digit, raw)
 
     def read_temp_raw(self):
