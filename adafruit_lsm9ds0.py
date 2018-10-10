@@ -397,8 +397,8 @@ class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
     # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
-        self._gyro_device = spi_device.I2CDevice(spi, gcs)
-        self._xm_device = spi_device.I2CDevice(spi, xmcs)
+        self._mag_device = spi_device.SPIDevice(spi, mcs, baudrate=200000, phase=1, polarity=1)
+        self._xg_device = spi_device.SPIDevice(spi, xgcs, baudrate=200000, phase=1, polarity=1)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
@@ -407,7 +407,6 @@ class LSM9DS0_SPI(LSM9DS0):
         else:
             device = self._xm_device
         with device as spi:
-            spi.configure(baudrate=200000, phase=0, polarity=0)
             self._BUFFER[0] = (address | 0x80) & 0xFF
             spi.write(self._BUFFER, end=1)
             spi.readinto(self._BUFFER, end=1)
@@ -419,7 +418,6 @@ class LSM9DS0_SPI(LSM9DS0):
         else:
             device = self._xm_device
         with device as spi:
-            spi.configure(baudrate=200000, phase=0, polarity=0)
             buf[0] = (address | 0x80) & 0xFF
             spi.write(buf, end=1)
             spi.readinto(buf, end=count)
@@ -430,7 +428,6 @@ class LSM9DS0_SPI(LSM9DS0):
         else:
             device = self._xm_device
         with device as spi:
-            spi.configure(baudrate=200000, phase=0, polarity=0)
             self._BUFFER[0] = (address & 0x7F) & 0xFF
             self._BUFFER[1] = val & 0xFF
             spi.write(self._BUFFER, end=2)
