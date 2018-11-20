@@ -397,8 +397,8 @@ class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
     # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
-        self._mag_device = spi_device.SPIDevice(spi, xmcs, baudrate=200000, phase=1, polarity=1)
-        self._xg_device = spi_device.SPIDevice(spi, gcs, baudrate=200000, phase=1, polarity=1)
+        self._gyro_device = spi_device.SPIDevice(spi, gcs, baudrate=200000, phase=1, polarity=1)
+        self._xm_device = spi_device.SPIDevice(spi, xmcs, baudrate=200000, phase=1, polarity=1)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
