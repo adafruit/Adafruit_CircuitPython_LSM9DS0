@@ -55,6 +55,7 @@ except ImportError:
 
 import adafruit_bus_device.i2c_device as i2c_device
 import adafruit_bus_device.spi_device as spi_device
+from digitalio import DigitalInOut, Direction
 
 from micropython import const
 
@@ -269,8 +270,7 @@ class LSM9DS0:
         m/s^2 values.
         """
         raw = self.read_accel_raw()
-        return map(lambda x: x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD,
-                   raw)
+        return (x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD for x in raw)
 
     def read_mag_raw(self):
         """Read the raw magnetometer sensor values and return it as a
@@ -290,7 +290,7 @@ class LSM9DS0:
         gauss values.
         """
         raw = self.read_mag_raw()
-        return map(lambda x: x * self._mag_mgauss_lsb / 1000.0, raw)
+        return (x * self._mag_mgauss_lsb / 1000.0 for x in raw)
 
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
@@ -309,8 +309,8 @@ class LSM9DS0:
         """The gyroscope X, Y, Z axis values as a 3-tuple of
         degrees/second values.
         """
-        raw = self.read_mag_raw()
-        return map(lambda x: x * self._gyro_dps_digit, raw)
+        raw = self.read_gyro_raw()
+        return (x * self._gyro_dps_digit for x in raw)
 
     def read_temp_raw(self):
         """Read the raw temperature sensor value and return it as a 16-bit
@@ -362,14 +362,7 @@ class LSM9DS0_I2C(LSM9DS0):
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
-        if sensor_type == _GYROTYPE:
-            device = self._gyro_device
-        else:
-            device = self._xm_device
-        with device as i2c:
-            self._BUFFER[0] = address & 0xFF
-            i2c.write(self._BUFFER, end=1, stop=False)
-            i2c.readinto(self._BUFFER, end=1)
+        self._read_bytes(sensor_type, address, 1, self._BUFFER)
         return self._BUFFER[0]
 
     def _read_bytes(self, sensor_type, address, count, buf):
@@ -379,8 +372,9 @@ class LSM9DS0_I2C(LSM9DS0):
             device = self._xm_device
         with device as i2c:
             buf[0] = address & 0xFF
-            i2c.write(buf, end=1, stop=False)
+            i2c.write(buf, end=1)
             i2c.readinto(buf, end=count)
+        #print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
@@ -391,25 +385,23 @@ class LSM9DS0_I2C(LSM9DS0):
             self._BUFFER[0] = address & 0xFF
             self._BUFFER[1] = val & 0xFF
             i2c.write(self._BUFFER, end=2)
+        #print("write to %02x: %02x" % (address, val))
 
 
 class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
     # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
-        self._gyro_device = spi_device.SPIDevice(spi, gcs, baudrate=200000, phase=1, polarity=1)
-        self._xm_device = spi_device.SPIDevice(spi, xmcs, baudrate=200000, phase=1, polarity=1)
+        gcs.direction = Direction.OUTPUT
+        gcs.value = True
+        xmcs.direction = Direction.OUTPUT
+        xmcs.value = True
+        self._gyro_device = spi_device.SPIDevice(spi, gcs)
+        self._xm_device = spi_device.SPIDevice(spi, xmcs)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
-        if sensor_type == _GYROTYPE:
-            device = self._gyro_device
-        else:
-            device = self._xm_device
-        with device as spi:
-            self._BUFFER[0] = (address | 0x80) & 0xFF
-            spi.write(self._BUFFER, end=1)
-            spi.readinto(self._BUFFER, end=1)
+        self._read_bytes(sensor_type, address, 1, self._BUFFER)
         return self._BUFFER[0]
 
     def _read_bytes(self, sensor_type, address, count, buf):
@@ -418,9 +410,10 @@ class LSM9DS0_SPI(LSM9DS0):
         else:
             device = self._xm_device
         with device as spi:
-            buf[0] = (address | 0x80) & 0xFF
+            buf[0] = (address | 0x80 | 0x40) & 0xFF
             spi.write(buf, end=1)
             spi.readinto(buf, end=count)
+        #print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
@@ -431,3 +424,4 @@ class LSM9DS0_SPI(LSM9DS0):
             self._BUFFER[0] = (address & 0x7F) & 0xFF
             self._BUFFER[1] = val & 0xFF
             spi.write(self._BUFFER, end=2)
+        #print("write to %02x: %02x" % (address, val))
