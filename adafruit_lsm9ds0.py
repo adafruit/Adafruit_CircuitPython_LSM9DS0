@@ -55,7 +55,7 @@ except ImportError:
 
 import adafruit_bus_device.i2c_device as i2c_device
 import adafruit_bus_device.spi_device as spi_device
-from digitalio import DigitalInOut, Direction
+from digitalio import Direction
 
 from micropython import const
 
