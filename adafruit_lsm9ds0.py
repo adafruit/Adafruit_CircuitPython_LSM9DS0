@@ -374,7 +374,7 @@ class LSM9DS0_I2C(LSM9DS0):
             buf[0] = address & 0xFF
             i2c.write(buf, end=1)
             i2c.readinto(buf, end=count)
-        #print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
+        # print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
@@ -385,7 +385,7 @@ class LSM9DS0_I2C(LSM9DS0):
             self._BUFFER[0] = address & 0xFF
             self._BUFFER[1] = val & 0xFF
             i2c.write(self._BUFFER, end=2)
-        #print("write to %02x: %02x" % (address, val))
+        # print("write to %02x: %02x" % (address, val))
 
 
 class LSM9DS0_SPI(LSM9DS0):
@@ -413,7 +413,7 @@ class LSM9DS0_SPI(LSM9DS0):
             buf[0] = (address | 0x80 | 0x40) & 0xFF
             spi.write(buf, end=1)
             spi.readinto(buf, end=count)
-        #print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
+        # print("read from %02x: %s" % (address, [hex(i) for i in buf[:count]]))
 
     def _write_u8(self, sensor_type, address, val):
         if sensor_type == _GYROTYPE:
@@ -424,4 +424,4 @@ class LSM9DS0_SPI(LSM9DS0):
             self._BUFFER[0] = (address & 0x7F) & 0xFF
             self._BUFFER[1] = val & 0xFF
             spi.write(self._BUFFER, end=2)
-        #print("write to %02x: %02x" % (address, val))
+        # print("write to %02x: %02x" % (address, val))
