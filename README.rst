@@ -27,10 +27,52 @@ Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading
 `the Adafruit library and driver bundle <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_.
 
+Installing from PyPI
+=====================
+On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
+PyPI <https://pypi.org/project/adafruit-circuitpython-lsm9ds0/>`_. To install for current user:
+
+.. code-block:: shell
+
+    pip3 install adafruit-circuitpython-lsm9ds0
+
+To install system-wide (this may be required in some cases):
+
+.. code-block:: shell
+
+    sudo pip3 install adafruit-circuitpython-lsm9ds0
+
+To install in a virtual environment in your current project:
+
+.. code-block:: shell
+
+    mkdir project-name && cd project-name
+    python3 -m venv .env
+    source .env/bin/activate
+    pip3 install adafruit-circuitpython-lsm9ds0
+
 Usage Example
 =============
 
-See examples/lsm9ds0_simpletest.py for a demo of the usage.
+.. code-block:: python
+
+    import time
+    import board
+    import busioimport adafruit_lsm9ds0
+
+    i2c = busio.I2C(board.SCL, board.SDA)
+    sensor = adafruit_lsm9ds0.LSM9DS0_I2C(i2c)
+
+    while True:
+        accel_x, accel_y, accel_z = sensor.acceleration
+        mag_x, mag_y, mag_z = sensor.magnetic
+        gyro_x, gyro_y, gyro_z = sensor.gyro
+        temp = sensor.temperature
+        print('Acceleration (m/s^2): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(accel_x, accel_y, accel_z))
+        print('Magnetometer (gauss): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(mag_x, mag_y, mag_z))
+        print('Gyroscope (degrees/sec): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(gyro_x, gyro_y, gyro_z))
+        print('Temperature: {0:0.3f}C'.format(temp))
+        time.sleep(1.0)
 
 Contributing
 ============
