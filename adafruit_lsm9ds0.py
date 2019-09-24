@@ -59,6 +59,9 @@ from digitalio import Direction
 
 from micropython import const
 
+__version__ = "0.0.0-auto.0"
+__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_LSM9DS0.git"
+
 # Internal constants and register values:
 # pylint: disable=bad-whitespace
 _LSM9DS0_ADDRESS_ACCELMAG           = const(0x1D)  # 3B >> 1 = 7bit default
