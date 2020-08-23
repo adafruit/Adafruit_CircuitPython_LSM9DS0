@@ -63,7 +63,6 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_LSM9DS0.git"
 
 # Internal constants and register values:
-# pylint: disable=bad-whitespace
 _LSM9DS0_ADDRESS_ACCELMAG = const(0x1D)  # 3B >> 1 = 7bit default
 _LSM9DS0_ADDRESS_GYRO = const(0x6B)  # D6 >> 1 = 7bit default
 _LSM9DS0_XM_ID = const(0b01001001)
@@ -131,7 +130,6 @@ MAGGAIN_12GAUSS = 0b11 << 5  # +/- 12 gauss
 GYROSCALE_245DPS = 0b00 << 4  # +/- 245 degrees per second rotation
 GYROSCALE_500DPS = 0b01 << 4  # +/- 500 degrees per second rotation
 GYROSCALE_2000DPS = 0b10 << 4  # +/- 2000 degrees per second rotation
-# pylint: enable=bad-whitespace
 
 
 def _twos_comp(val, bits):
