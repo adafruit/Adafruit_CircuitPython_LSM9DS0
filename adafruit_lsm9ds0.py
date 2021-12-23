@@ -31,10 +31,7 @@ Implementation Notes
   https://github.com/adafruit/circuitpython/releases
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
-try:
-    import struct
-except ImportError:
-    import ustruct as struct
+import struct
 
 from adafruit_bus_device import i2c_device
 from adafruit_bus_device import spi_device
