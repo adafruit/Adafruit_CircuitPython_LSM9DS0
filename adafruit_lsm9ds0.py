@@ -31,12 +31,11 @@ Implementation Notes
   https://github.com/adafruit/circuitpython/releases
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
+
 import struct
 
-from adafruit_bus_device import i2c_device
-from adafruit_bus_device import spi_device
+from adafruit_bus_device import i2c_device, spi_device
 from digitalio import Direction
-
 from micropython import const
 
 __version__ = "0.0.0+auto.0"
@@ -167,13 +166,13 @@ class LSM9DS0:
 
     @accel_range.setter
     def accel_range(self, val):
-        assert val in (
+        assert val in {
             ACCELRANGE_2G,
             ACCELRANGE_4G,
             ACCELRANGE_6G,
             ACCELRANGE_8G,
             ACCELRANGE_16G,
-        )
+        }
         reg = self._read_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG2_XM)
         reg = (reg & ~(0b00111000)) & 0xFF
         reg |= val
@@ -202,7 +201,7 @@ class LSM9DS0:
 
     @mag_gain.setter
     def mag_gain(self, val):
-        assert val in (MAGGAIN_2GAUSS, MAGGAIN_4GAUSS, MAGGAIN_8GAUSS, MAGGAIN_12GAUSS)
+        assert val in {MAGGAIN_2GAUSS, MAGGAIN_4GAUSS, MAGGAIN_8GAUSS, MAGGAIN_12GAUSS}
         reg = self._read_u8(_XMTYPE, _LSM9DS0_REGISTER_CTRL_REG6_XM)
         reg = (reg & ~(0b01100000)) & 0xFF
         reg |= val
@@ -228,7 +227,7 @@ class LSM9DS0:
 
     @gyro_scale.setter
     def gyro_scale(self, val):
-        assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
+        assert val in {GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS}
         reg = self._read_u8(_GYROTYPE, _LSM9DS0_REGISTER_CTRL_REG4_G)
         reg = (reg & ~(0b00110000)) & 0xFF
         reg |= val
@@ -257,9 +256,7 @@ class LSM9DS0:
         m/s^2 values.
         """
         raw = self.read_accel_raw()
-        return (
-            x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD for x in raw
-        )
+        return (x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD for x in raw)
 
     def read_mag_raw(self):
         """Read the raw magnetometer sensor values and return it as a
@@ -305,9 +302,7 @@ class LSM9DS0:
         want to use the temperature property!
         """
         # Read temp sensor
-        self._read_bytes(
-            _XMTYPE, 0x80 | _LSM9DS0_REGISTER_TEMP_OUT_L_XM, 2, self._BUFFER
-        )
+        self._read_bytes(_XMTYPE, 0x80 | _LSM9DS0_REGISTER_TEMP_OUT_L_XM, 2, self._BUFFER)
         temp = ((self._BUFFER[1] << 8) | self._BUFFER[0]) >> 4
         return _twos_comp(temp, 12)
 
@@ -379,7 +374,6 @@ class LSM9DS0_I2C(LSM9DS0):
 class LSM9DS0_SPI(LSM9DS0):
     """Driver for the LSM9DS0 connected over SPI."""
 
-    # pylint: disable=no-member
     def __init__(self, spi, xmcs, gcs):
         gcs.direction = Direction.OUTPUT
         gcs.value = True
